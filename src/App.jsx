@@ -1,21 +1,34 @@
 import React, { useState, useEffect } from 'react'
 import './App.css'
 import Header from './components/Header'
-import Sidebar from './components/Sidebar'
+import FoldersView from './components/FoldersView'
 import ContentView from './components/ContentView'
 import UploadModal from './components/UploadModal'
 
 function App() {
-  const [selectedCategory, setSelectedCategory] = useState('Documentos')
+  const [currentView, setCurrentView] = useState('folders')
+  const [selectedFolder, setSelectedFolder] = useState(null)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  
   const [contents, setContents] = useState({
-    Documentos: [],
-    Fotos: [],
-    Textos: []
+    'Primero': [
+      { name: 'Primero', description: 'Contenido inicial - Documento 1', type: 'text', text: 'Este es el contenido de ejemplo para Primero' }
+    ],
+    'Segundo': [
+      { name: 'Segundo', description: 'Contenido inicial - Documento 2', type: 'text', text: 'Este es el contenido de ejemplo para Segundo' }
+    ],
+    'Tercero': [
+      { name: 'Tercero', description: 'Contenido inicial - Documento 3', type: 'text', text: 'Este es el contenido de ejemplo para Tercero' }
+    ],
+    'Cuarto': [
+      { name: 'Cuarto', description: 'Contenido inicial - Documento 4', type: 'text', text: 'Este es el contenido de ejemplo para Cuarto' }
+    ],
+    'Quinto': [
+      { name: 'Quinto', description: 'Contenido inicial - Documento 5', type: 'text', text: 'Este es el contenido de ejemplo para Quinto' }
+    ]
   })
 
-  // Cargar contenido del localStorage
   useEffect(() => {
     const savedContents = localStorage.getItem('csContents')
     if (savedContents) {
@@ -23,10 +36,28 @@ function App() {
     }
   }, [])
 
+  const folders = [
+    { name: 'Primero', icon: '📄', color: '#3b82f6' },
+    { name: 'Segundo', icon: '📄', color: '#0ea5e9' },
+    { name: 'Tercero', icon: '📄', color: '#06b6d4' },
+    { name: 'Cuarto', icon: '📄', color: '#10b981' },
+    { name: 'Quinto', icon: '📄', color: '#f59e0b' }
+  ]
+
+  const handleFolderClick = (folderName) => {
+    setSelectedFolder(folderName)
+    setCurrentView('content')
+  }
+
+  const handleBack = () => {
+    setSelectedFolder(null)
+    setCurrentView('folders')
+  }
+
   const handleAddContent = (newContent) => {
     const updatedContents = {
       ...contents,
-      [selectedCategory]: [...contents[selectedCategory], newContent]
+      [selectedFolder]: [...contents[selectedFolder], newContent]
     }
     setContents(updatedContents)
     localStorage.setItem('csContents', JSON.stringify(updatedContents))
@@ -34,10 +65,10 @@ function App() {
   }
 
   const handleDeleteContent = (index) => {
-    const updatedCategory = contents[selectedCategory].filter((_, i) => i !== index)
+    const updatedFolder = contents[selectedFolder].filter((_, i) => i !== index)
     const updatedContents = {
       ...contents,
-      [selectedCategory]: updatedCategory
+      [selectedFolder]: updatedFolder
     }
     setContents(updatedContents)
     localStorage.setItem('csContents', JSON.stringify(updatedContents))
@@ -45,21 +76,27 @@ function App() {
 
   return (
     <div className="app">
-      <Header onUploadClick={() => setShowUploadModal(true)} />
+      <Header 
+        currentView={currentView}
+        selectedFolder={selectedFolder}
+        onUploadClick={() => setShowUploadModal(true)}
+        onBack={handleBack}
+      />
       <div className="app-container">
-        <Sidebar 
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
-        />
-        <ContentView 
-          category={selectedCategory}
-          contents={contents[selectedCategory]}
-          onDelete={handleDeleteContent}
-          isAuthenticated={isAuthenticated}
-        />
+        {currentView === 'folders' && (
+          <FoldersView folders={folders} onFolderClick={handleFolderClick} />
+        )}
+        {currentView === 'content' && (
+          <ContentView
+            folder={selectedFolder}
+            contents={contents[selectedFolder] || []}
+            onDelete={handleDeleteContent}
+            isAuthenticated={isAuthenticated}
+          />
+        )}
       </div>
-      {showUploadModal && (
-        <UploadModal 
+      {showUploadModal && currentView === 'content' && (
+        <UploadModal
           onClose={() => setShowUploadModal(false)}
           onUpload={handleAddContent}
           onAuthenticate={setIsAuthenticated}

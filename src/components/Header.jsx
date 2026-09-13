@@ -1,22 +1,31 @@
 import React from 'react'
-import { Upload, BookOpen } from 'lucide-react'
+import { Upload, BookOpen, ChevronLeft } from 'lucide-react'
 import './Header.css'
 
-function Header({ onUploadClick }) {
+function Header({ currentView, selectedFolder, onUploadClick, onBack }) {
   return (
     <header className="header">
       <div className="header-content">
         <div className="header-title">
-          <BookOpen size={32} className="logo" />
-          <div>
-            <h1>CS Fichas</h1>
-            <p>Repositorio Público de Contenidos</p>
+          {currentView !== 'folders' && (
+            <button className="back-btn" onClick={onBack}>
+              <ChevronLeft size={24} />
+            </button>
+          )}
+          <div className="logo-section">
+            <BookOpen size={32} className="logo" />
+            <div>
+              <h1>CS Fichas</h1>
+              <p>{currentView === 'folders' ? 'Selecciona un documento' : selectedFolder}</p>
+            </div>
           </div>
         </div>
-        <button className="upload-btn" onClick={onUploadClick}>
-          <Upload size={20} />
-          Subir Contenido
-        </button>
+        {currentView === 'content' && (
+          <button className="upload-btn" onClick={onUploadClick}>
+            <Upload size={20} />
+            Agregar
+          </button>
+        )}
       </div>
     </header>
   )
